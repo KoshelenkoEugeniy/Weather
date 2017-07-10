@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         let defaultSettings = UserDefaults.standard
-        let defaultKeys = ["uid" : ""]
+        let defaultKeys = ["uid" : "", "weatherKey" : "08b4ca356537edcebf3ce606147e14c0", "url":""]
         defaultSettings.register(defaults: defaultKeys)
         
         FirebaseApp.configure()

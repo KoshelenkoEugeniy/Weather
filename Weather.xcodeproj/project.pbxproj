@@ -11,6 +11,7 @@
 		3E9E68B01F1185BA005741F9 /* Weather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E9E68AF1F1185BA005741F9 /* Weather.swift */; };
 		3EA4930A1F0FC872000B5C90 /* CitiesListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA493091F0FC872000B5C90 /* CitiesListTableViewCell.swift */; };
 		3EA4930C1F0FC888000B5C90 /* SelectedCitiesTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA4930B1F0FC888000B5C90 /* SelectedCitiesTableViewCell.swift */; };
+		3EB143CF1F13E9C10078F919 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EB143CE1F13E9C10078F919 /* SwiftyJSON.framework */; };
 		3EB42CEF1F0AAF8500C70C80 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3EB42CEE1F0AAF8500C70C80 /* GoogleService-Info.plist */; };
 		3EC8EFDD1F0811F400DBF917 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC8EFDC1F0811F400DBF917 /* AppDelegate.swift */; };
 		3EC8EFDF1F0811F400DBF917 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC8EFDE1F0811F400DBF917 /* LoginViewController.swift */; };
@@ -32,6 +33,7 @@
 		3E9E68AF1F1185BA005741F9 /* Weather.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Weather.swift; sourceTree = "<group>"; };
 		3EA493091F0FC872000B5C90 /* CitiesListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CitiesListTableViewCell.swift; sourceTree = "<group>"; };
 		3EA4930B1F0FC888000B5C90 /* SelectedCitiesTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectedCitiesTableViewCell.swift; sourceTree = "<group>"; };
+		3EB143CE1F13E9C10078F919 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = "../../../Library/Developer/Xcode/DerivedData/Weather-djxwcnosnhqcbvgvpgjfsxwwxcpp/Build/Products/Debug-iphonesimulator/SwiftyJSON/SwiftyJSON.framework"; sourceTree = "<group>"; };
 		3EB42CEE1F0AAF8500C70C80 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3EC8EFD91F0811F400DBF917 /* Weather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Weather.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EC8EFDC1F0811F400DBF917 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -56,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3EB143CF1F13E9C10078F919 /* SwiftyJSON.framework in Frameworks */,
 				DA22820F29D5FC226AECB328 /* Pods_Weather.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -141,6 +144,7 @@
 		A5F5F55FE972A6DCFF7428DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3EB143CE1F13E9C10078F919 /* SwiftyJSON.framework */,
 				716048EBCE7B46913AC597D4 /* Pods_Weather.framework */,
 			);
 			name = Frameworks;

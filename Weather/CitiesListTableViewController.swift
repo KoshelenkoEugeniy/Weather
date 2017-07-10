@@ -21,6 +21,8 @@ class CitiesListTableViewController: UITableViewController{
     
     var firebase = Firebase()
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -75,10 +77,11 @@ class CitiesListTableViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cityName", for: indexPath)
 
-        let city: String = cityNames[indexPath.row]
+        let city: City = Cities[indexPath.row]
         
         if let cityCell = cell as? CitiesListTableViewCell {
-            cityCell.nameOfCity.text = city
+            cityCell.nameOfCity.text = city.name!
+            cityCell.nameOfCountry.text = city.country!
         }
         
         return cell

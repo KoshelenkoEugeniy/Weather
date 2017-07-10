@@ -12,10 +12,13 @@ class CitiesListTableViewCell: UITableViewCell {
 
     @IBOutlet weak var nameOfCity: UILabel!
     
+    @IBOutlet weak var nameOfCountry: UILabel!
+    
     var city: City? { didSet { updateUI() } }
     
     func updateUI() {
         nameOfCity?.text = city?.name
+        nameOfCountry?.text = city?.country
     }
     
 }

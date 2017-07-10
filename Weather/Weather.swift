@@ -10,20 +10,19 @@ import Foundation
 import UIKit
 
 struct Weather {
-    var id: Int?
     var description: String?
     var icon: UIImageView?
+    var iconName: String?
     
     init(){
-        self.id = nil
         self.description = nil
         self.icon = nil
+        self.iconName = nil
     }
     
-    init(id: Int?, description: String?, icon: UIImageView?){
-        self.id = id
+    init(description: String?, iconName: String?){
         self.description = description
-        self.icon = icon
+        self.iconName = iconName
     }
 }
 
@@ -45,7 +44,6 @@ struct Main {
 }
 
 struct weatherForecast {
-    var coord: Coordinates
     var weather: Weather
     var main: Main
     var windSpeed: Float?
@@ -54,7 +52,6 @@ struct weatherForecast {
     var cityName: String?
     
     init(){
-        self.coord = Coordinates()
         self.weather = Weather()
         self.main = Main()
         self.windSpeed = nil
@@ -63,8 +60,7 @@ struct weatherForecast {
         self.cityName = nil
     }
     
-    init(coord: Coordinates, weather: Weather, main: Main, windSpeed: Float?, clouds: Float?, cityId: Int?, cityName: String?){
-        self.coord = coord
+    init(weather: Weather, main: Main, windSpeed: Float?, clouds: Float?, cityId: Int?, cityName: String?){
         self.weather = weather
         self.main = main
         self.windSpeed = windSpeed

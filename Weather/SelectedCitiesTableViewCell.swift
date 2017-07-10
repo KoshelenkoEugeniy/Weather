@@ -20,7 +20,7 @@ class SelectedCitiesTableViewCell: UITableViewCell {
     
     func updateUI() {
         weatherIcon = cityForecast?.weather.icon
-        cityName?.text = cityForecast?.cityName
-        cityTemperature?.text = String(describing: cityForecast?.main.temp)
+        cityName?.text = cityForecast?.cityName!
+        cityTemperature?.text = String(describing: cityForecast?.main.temp!)
     }
 }

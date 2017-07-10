@@ -123,7 +123,17 @@ class LoginViewController: UIViewController {                    //, FBSDKLoginB
                 }
                 
                 if let vc = destinationVC as? SelectedCitiesTableViewController {
-                   
+                    
+                    firebaseLogin.observeChangesInDatabase(completionHandler: { (cities) in
+                        vc.selectedCities.removeAll()
+                        vc.selectedCities = cities
+                        
+                        vc.createSession(with: vc.selectedCities, completionHandler:  {(feedback) in
+                            if feedback == "done" {
+                                vc.tableView.reloadData()
+                            }
+                        })
+                    })
                 }
                 
             default:
