@@ -21,7 +21,14 @@ class SelectedCitiesTableViewController: UITableViewController {
     let loadingLabel = UILabel()
     var dataTask: URLSessionDataTask?
     let session = URLSession.shared
-    
+    var startIndex: Int = 0
+    var endIndex: Int = 0
+    var isLessThan20Cities: Bool = true
+    var itWasTheLastPartOfCities: Bool = true
+    let mySerialQueue = DispatchQueue(label: "com.OpenWeatherMap.MySerial", qos: .userInitiated)
+    var countOfBlocks: Int = 0
+    var inTheMiddleOfGettingWeather: Bool = false
+    var countOfSections: Int = 1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,6 +38,11 @@ class SelectedCitiesTableViewController: UITableViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        Init()
+    }
+    
+    func Init(){
+        
         setLoadingScreen()
         
         isUserWaiting = true
@@ -65,7 +77,9 @@ class SelectedCitiesTableViewController: UITableViewController {
         let forecast: weatherForecast = weatherForCities[indexPath.row]
         
         if let weatherCell = cell as? SelectedCitiesTableViewCell {
-            weatherCell.weatherIcon = forecast.weather.icon
+            
+            weatherCell.weatherIcon.downloadImage(from: "http://openweathermap.org/img/w/\(forecast.weather.iconName!).png")
+            
             weatherCell.cityName.text = forecast.cityName!
             
             if forecast.main.temp! > 0 {
@@ -81,18 +95,47 @@ class SelectedCitiesTableViewController: UITableViewController {
     func loadData(){
         
         firebase.observeChangesInDatabase(completionHandler: { [weak weakself = self] (cities) in
-            weakself?.selectedCities.removeAll()
-            weakself?.selectedCities = cities
-            if weakself?.isUserWaiting == true {
-                weakself?.createSession(with: cities, completionHandler:  {[weak weakself2 = self](feedback) in
-                    if feedback == "done" && weakself2?.isUserWaiting == true{
-                        DispatchQueue.main.async {
-                            weakself2?.tableView.reloadData()
-                            weakself2?.removeLoadingScreen()
-                        }
-                    }
-                })
+            
+            if cities.count == 0 {
+                //weakself?.countOfSections = 1
+                DispatchQueue.main.async {
+                    weakself?.removeLoadingScreen()
+                    weakself?.tableView.reloadData()
+                }
             }
+            else {
+                weakself?.countOfSections = 1
+                
+                weakself?.selectedCities.removeAll()
+                weakself?.selectedCities = cities
+                if weakself?.isUserWaiting == true {
+                    
+                    if weakself?.inTheMiddleOfGettingWeather == false {
+                        weakself?.createSession(with: cities, completionHandler:  {[weak weakself2 = self](feedback) in
+                            if feedback == "done" && weakself2?.isUserWaiting == true{
+                                
+                                if weakself2?.itWasTheLastPartOfCities == true {
+                                    
+                                    weakself2?.startIndex = 0
+                                    weakself2?.endIndex = 0
+                                    weakself2?.itWasTheLastPartOfCities = true
+                                    weakself2?.isLessThan20Cities = true
+                                    weakself2?.inTheMiddleOfGettingWeather = false
+                                    
+                                    DispatchQueue.main.async {
+                                        weakself2?.tableView.reloadData()
+                                        weakself2?.removeLoadingScreen()
+                                    }
+                                } else {
+                                    weakself2?.inTheMiddleOfGettingWeather = false
+                                    weakself2?.loadData()
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+            
         })
     }
 
@@ -132,35 +175,37 @@ class SelectedCitiesTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
         return true
-    }
-    */
+    }*/
+    
 
-    /*
+    
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
+
+            let currentCity = selectedCities[indexPath.row]
+             currentCity.ref?.removeValue()
+            
+            
+            //weatherForCities.remove(at: indexPath.row)
+            //selectedCities.remove(at: indexPath.row)
+            //print("\(indexPath.row) \(indexPath.section)")
+            //tableView.deleteRows(at: [indexPath], with: .fade)
+            //tableView.reloadData()
+            
+           
+            
+            
+            Init()
+        }
+        
+        
+        //else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+        //}
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
+    
 
     
     // MARK: - Navigation
@@ -190,8 +235,8 @@ class SelectedCitiesTableViewController: UITableViewController {
     }*/
 
     
-    @IBAction func unwindFromCitiesListAddNewCity(_ segue: UIStoryboardSegue){
-        
+    //@IBAction func unwindFromCitiesListAddNewCity(_ segue: UIStoryboardSegue){
+       /*
         if let identifier = segue.identifier {
             switch identifier {
             case "unwindNewCity":
@@ -221,8 +266,81 @@ class SelectedCitiesTableViewController: UITableViewController {
             default:
                 print("another identifier")
             }
-        }
+        }*/
 
+    //}
+    
+    
+    
+    
+    
+    func divideArrayOnParts (of cities:[City]) -> [City]{
+        
+        var subarrayCities:[City] = []
+        
+        if cities.count == 0 {
+            subarrayCities.removeAll()
+        } else {
+            if startIndex == 0 && endIndex == 0 {
+                
+                inTheMiddleOfGettingWeather = true
+                
+                weatherForCities.removeAll()
+                
+                let floatCount = Float(cities.count)
+                
+                var quantityOfCycles = floatCount / 20.000
+                
+                quantityOfCycles = quantityOfCycles.rounded(.up)
+                
+                let count = Int(quantityOfCycles)
+                
+                countOfBlocks = count
+                
+                if count == 1 {
+                    startIndex = 0
+                    endIndex =  cities.count - 1
+                } else {
+                    startIndex = 0
+                    endIndex =  19
+                    isLessThan20Cities = false
+                    itWasTheLastPartOfCities = false
+                }
+            } else {
+                startIndex = endIndex + 1
+                if endIndex + 20 >= cities.count {
+                    endIndex = cities.count - 1
+                } else {
+                    endIndex = endIndex + 20
+                }
+            }
+            
+            if startIndex > endIndex {
+                subarrayCities.removeAll()
+            } else {
+                subarrayCities.append(contentsOf: cities[startIndex...endIndex])
+            }
+
+        }
+        
+        return subarrayCities
+        
+        /*
+        for i in 0 ..< count {
+            
+            subarrayCities.removeAll()
+            
+            if (i * 20 + 19) >= cities.count {
+                startIndex = 20 * i
+                endIndex = cities.count - 1
+            } else {
+                startIndex = 20 * i
+                endIndex = i * 20 + 19
+                if count > 1 {
+                    isLessThan20Cities = false
+                }
+            }
+        }*/
     }
     
     
@@ -231,41 +349,91 @@ class SelectedCitiesTableViewController: UITableViewController {
     func createSession (with cities:[City], completionHandler: @escaping (String) -> Void) {
         
         var weatherURL: URL? = nil
-        
+        var tempStr = ""
         let weatherApiKey:String = UserDefaults.standard.string(forKey: "weatherKey")!
         
-        if cities.count == 1 {
-            weatherURL = URL(string: "http://api.openweathermap.org/data/2.5/weather?id=\(cities[0].id!)&units=metric&APPID=\(weatherApiKey)")
+        let subarrayCities = divideArrayOnParts(of: cities)
+        
+        if subarrayCities.count == 0 {
+            completionHandler("error")
+        } else {
+        /*
+
+        var subarrayCities:[City] = []
+        
+        let floatCount = Float(cities.count)
+        
+        var quantityOfCycles = floatCount / 20.000
+        
+        quantityOfCycles = quantityOfCycles.rounded(.up)
+        
+        let count = Int(quantityOfCycles)
+        
+        countOfBlocks = count
+        
+        for i in 0 ..< count {
             
-        } else if cities.count > 1 && cities.count < 20 {
-            var tempStr = ""
-            for i in 0...cities.count - 1 {
-                if i == cities.count - 1 {
-                    tempStr = tempStr + "\(cities[i].id!)"
+            subarrayCities.removeAll()
+            
+            if (i * 20 + 19) >= cities.count {
+                startIndex = 20 * i
+                endIndex = cities.count - 1
+            } else {
+                startIndex = 20 * i
+                endIndex = i * 20 + 19
+                if count > 1 {
+                    isLessThan20Cities = false
+                    itWasTheLastPartOfCities = false
+                }
+            }
+            
+            subarrayCities.append(contentsOf: cities[startIndex...endIndex])*/
+            
+            for i in 0...subarrayCities.count - 1 {
+                if i == subarrayCities.count - 1 {
+                    tempStr = tempStr + "\(subarrayCities[i].id!)"
                 } else {
-                    tempStr = tempStr + "\(cities[i].id!)" + ","
+                    tempStr = tempStr + "\(subarrayCities[i].id!)" + ","
                 }
             }
             
             weatherURL = URL(string: "http://api.openweathermap.org/data/2.5/group?id=\(tempStr)&units=metric&APPID=\(weatherApiKey)")
-        }
-        
-        dataTask = session.dataTask(with: weatherURL!, completionHandler: { [weak weakself = self] (data, response, error) in
             
-            if let error = error {
-                completionHandler("session error: \(error.localizedDescription)")
-            }
-            else if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
+            //mySerialQueue.sync {
+                dataTask = session.dataTask(with: weatherURL!, completionHandler: { [weak weakself = self] (data, response, error) in
                     
-                    weakself?.weatherForCities = (weakself?.parseWeather(data))!
-                    
-                    completionHandler("done")
-                }
-            }
-        })
-        
-        dataTask?.resume()
+                    if let error = error {
+                        completionHandler("session error: \(error.localizedDescription)")
+                    }
+                    else if let httpResponse = response as? HTTPURLResponse {
+                        if httpResponse.statusCode == 200 {
+                            
+                            var temp: [weatherForecast] = []
+                            
+                            temp = (weakself?.parseWeather(data))!
+                            
+                            if weakself?.isLessThan20Cities == true {
+                                weakself?.weatherForCities = temp
+                            } else {
+                                weakself?.weatherForCities.append(contentsOf: temp)
+                                
+                                weakself?.countOfBlocks = (weakself?.countOfBlocks)! - 1
+                                if weakself?.countOfBlocks == 0 {
+                                    weakself?.itWasTheLastPartOfCities = true
+                                }
+                            }
+                            
+                            completionHandler("done")
+                            
+                            
+                            
+                        }
+                    }
+                })
+                dataTask?.resume()
+            //}
+            
+        }
     }
 
     
@@ -314,4 +482,23 @@ class SelectedCitiesTableViewController: UITableViewController {
         return arrayOfWeathers
     }
 
+}
+
+
+extension UIImageView {
+    func downloadImage(from url:String) {
+        let urlRequest = URLRequest(url: URL(string: url)!)
+        
+        let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
+            if error != nil {
+                print (error.debugDescription)
+            } else {
+                DispatchQueue.main.async {
+                    self.image = UIImage(data: data!)
+                }
+            }
+            
+        }
+        task.resume()
+    }
 }

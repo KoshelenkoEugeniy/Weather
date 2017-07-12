@@ -15,12 +15,14 @@ struct City {
     var name: String?
     var country: String?
     var coord: Coordinates?
+    var ref: DatabaseReference?
     
     init(){
         self.id = nil
         self.name = nil
         self.country = nil
         self.coord = Coordinates()
+        self.ref = nil
     }
     
     init(id: Int?, name: String?, country:String?, coord:Coordinates?) {
@@ -36,6 +38,7 @@ struct City {
         name = snapshotValue?["name"] as? String
         id = snapshotValue?["id"] as? Int
         country = snapshotValue?["country"] as? String
+        ref = snapshot.ref
         
         let coordValue = snapshotValue?["coord"] as? [String: AnyObject]
         let coordLon = coordValue?["lon"] as? Float

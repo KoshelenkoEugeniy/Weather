@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Zab-mc-Nr4">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -44,7 +44,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="958" y="-321"/>
+            <point key="canvasLocation" x="957.60000000000002" y="-321.58920539730138"/>
         </scene>
         <!--Detail Weather View Controller-->
         <scene sceneID="psY-mA-9G9">
@@ -257,14 +257,13 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" enabled="NO" title="Add" id="CQG-ib-lb4">
                             <connections>
-                                <segue destination="Wc6-vU-c6R" kind="unwind" identifier="unwindNewCity" unwindAction="unwindFromCitiesListAddNewCity:" id="FRE-8H-vhk"/>
+                                <action selector="addNewCity:" destination="eqA-2Q-fcz" id="1XO-ge-zDa"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jbH-ek-c3h" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <exit id="Wc6-vU-c6R" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="3358" y="-1141"/>
         </scene>
@@ -283,19 +282,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="szB-S3-mjq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1747" y="-319"/>
-        </scene>
-        <!--Split View Controller-->
-        <scene sceneID="UEZ-TI-fx0">
-            <objects>
-                <splitViewController id="Zab-mc-Nr4" sceneMemberID="viewController">
-                    <connections>
-                        <segue destination="0VC-2f-MPJ" kind="relationship" relationship="detailViewController" id="3DE-Hq-MEm"/>
-                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="masterViewController" id="rNa-sh-48j"/>
-                    </connections>
-                </splitViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dTL-dP-0Yo" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="4" y="3"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="nFK-de-oYX">
@@ -316,8 +302,4 @@
             <point key="canvasLocation" x="2569" y="-1141"/>
         </scene>
     </scenes>
-    <inferredMetricsTieBreakers>
-        <segue reference="L5e-Py-Gal"/>
-        <segue reference="2zT-Zf-87f"/>
-    </inferredMetricsTieBreakers>
 </document>

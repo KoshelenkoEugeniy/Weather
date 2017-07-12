@@ -61,6 +61,11 @@ class CitiesListTableViewController: UITableViewController{
         dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func addNewCity(_ sender: UIBarButtonItem) {
+        let currentCity = Cities[selectedCity]
+        firebase.addNewCity(with: currentCity)
+        dismiss(animated: true, completion: nil)
+    }
     
     
     // MARK: - Table view data source
@@ -120,14 +125,14 @@ class CitiesListTableViewController: UITableViewController{
     }
 
 
-   
+   /*
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier! == "unwindNewCity" {
             let currentCity = Cities[selectedCity]
             firebase.addNewCity(with: currentCity)
         }
     }
-    
+    */
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedCity = indexPath.row

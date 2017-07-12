@@ -80,6 +80,7 @@ class Firebase {
             }
             return completionHandler((weakself?.userCities)!)
         })
+
     }
     
 }
