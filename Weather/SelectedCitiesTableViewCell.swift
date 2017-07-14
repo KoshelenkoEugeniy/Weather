@@ -8,6 +8,8 @@
 
 import UIKit
 
+// Table view cell only for selected cities 
+
 class SelectedCitiesTableViewCell: UITableViewCell {
 
     @IBOutlet weak var weatherIcon: UIImageView!
@@ -19,8 +21,8 @@ class SelectedCitiesTableViewCell: UITableViewCell {
     var cityForecast: weatherForecast? { didSet { updateUI() } }
     
     func updateUI() {
-        weatherIcon = cityForecast?.weather.icon
         cityName?.text = cityForecast?.cityName!
         cityTemperature?.text = String(describing: cityForecast?.main.temp!)
     }
+    
 }

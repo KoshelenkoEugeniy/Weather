@@ -13,26 +13,32 @@ import SwiftyJSON
 
 class SelectedCitiesTableViewController: UITableViewController {
     var firebase = Firebase()
-    var selectedCities: [City] = []
-    var weatherForCities: [weatherForecast] = []
-    var isUserWaiting:Bool = false
-    let loadingView = UIView()
+    var selectedCities: [City] = []     // array of selected cities
+    var weatherForCities: [weatherForecast] = []    // array with weather for selected cities
+    
+    var isUserWaiting:Bool = false  // if user is still waiting
+    let loadingView = UIView()      // view for spinner
     let spinner = UIActivityIndicatorView()
     let loadingLabel = UILabel()
+    
     var dataTask: URLSessionDataTask?
     let session = URLSession.shared
-    var startIndex: Int = 0
-    var endIndex: Int = 0
-    var isLessThan20Cities: Bool = true
-    var itWasTheLastPartOfCities: Bool = true
-    let mySerialQueue = DispatchQueue(label: "com.OpenWeatherMap.MySerial", qos: .userInitiated)
-    var countOfBlocks: Int = 0
-    var inTheMiddleOfGettingWeather: Bool = false
-    var countOfSections: Int = 1
+    
+    // OpenWeatherMap allows getting info maximum for 20 cities per one request
+    // so if elements in selectedCities[] would be more than 20, array divided on subarrays
+    
+    var startIndex: Int = 0 // startindex of current subarray
+    var endIndex: Int = 0   // endindex of current subarray
+    var isLessThan20Cities: Bool = true // flag that shows if in array more than 20 cities
+    var itWasTheLastPartOfCities: Bool = true //flag that shows if it was the last subarray
+    
+    var countOfBlocks: Int = 0  //counter of subarrays that I have get from Firebase
+    var inTheMiddleOfGettingWeather: Bool = false   // flag that shows if view controller is making now an urlreguest for some subarray
+    var cityIndex = -1  //index of selected city for showing detailed weather
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         tableView.estimatedRowHeight = tableView.rowHeight
         tableView.rowHeight = UITableViewAutomaticDimension
     }
@@ -42,22 +48,13 @@ class SelectedCitiesTableViewController: UITableViewController {
     }
     
     func Init(){
-        
         setLoadingScreen()
-        
         isUserWaiting = true
-        
         loadData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         isUserWaiting = false
-    }
-    
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
     // MARK: - Table view data source
@@ -67,7 +64,6 @@ class SelectedCitiesTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-       
         return selectedCities.count
     }
 
@@ -77,6 +73,8 @@ class SelectedCitiesTableViewController: UITableViewController {
         let forecast: weatherForecast = weatherForCities[indexPath.row]
         
         if let weatherCell = cell as? SelectedCitiesTableViewCell {
+            
+            // downloading small icon of weather according to icon name
             
             weatherCell.weatherIcon.downloadImage(from: "http://openweathermap.org/img/w/\(forecast.weather.iconName!).png")
             
@@ -90,27 +88,43 @@ class SelectedCitiesTableViewController: UITableViewController {
         }
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        cityIndex = indexPath.row
+        self.performSegue(withIdentifier: "detailWeather", sender: self)    //perform segue on detailed Weather forecast
+    }
  
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let currentCity = selectedCities[indexPath.row] //remove city from Firebase accoding to reference.
+            currentCity.ref?.removeValue()
+        }
+    }
+    
+    //---
     
     func loadData(){
         
         firebase.observeChangesInDatabase(completionHandler: { [weak weakself = self] (cities) in
             
             if cities.count == 0 {
-                //weakself?.countOfSections = 1
+                
+                // if current user doesn't has any saved city in Firebase, table view reloaded
+                
                 DispatchQueue.main.async {
+                    weakself?.weatherForCities.removeAll()
+                    weakself?.selectedCities.removeAll()
                     weakself?.removeLoadingScreen()
                     weakself?.tableView.reloadData()
                 }
             }
             else {
-                weakself?.countOfSections = 1
-                
+    
                 weakself?.selectedCities.removeAll()
-                weakself?.selectedCities = cities
+                weakself?.selectedCities = cities       // else save array of users cities and if user is still waiting
                 if weakself?.isUserWaiting == true {
                     
-                    if weakself?.inTheMiddleOfGettingWeather == false {
+                    if weakself?.inTheMiddleOfGettingWeather == false {         // create a url request
                         weakself?.createSession(with: cities, completionHandler:  {[weak weakself2 = self](feedback) in
                             if feedback == "done" && weakself2?.isUserWaiting == true{
                                 
@@ -123,11 +137,12 @@ class SelectedCitiesTableViewController: UITableViewController {
                                     weakself2?.inTheMiddleOfGettingWeather = false
                                     
                                     DispatchQueue.main.async {
-                                        weakself2?.tableView.reloadData()
+                                        weakself2?.tableView.reloadData()   // and shows results
                                         weakself2?.removeLoadingScreen()
                                     }
                                 } else {
-                                    weakself2?.inTheMiddleOfGettingWeather = false
+                                    weakself2?.inTheMiddleOfGettingWeather = false  // else if not all cities were returned by Firebase
+                                                                                    // making next request
                                     weakself2?.loadData()
                                 }
                             }
@@ -139,6 +154,7 @@ class SelectedCitiesTableViewController: UITableViewController {
         })
     }
 
+    
     
     
     func setLoadingScreen() {
@@ -170,53 +186,15 @@ class SelectedCitiesTableViewController: UITableViewController {
         spinner.stopAnimating()
         loadingLabel.isHidden = true
     }
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }*/
     
-
-    
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-
-            let currentCity = selectedCities[indexPath.row]
-             currentCity.ref?.removeValue()
-            
-            
-            //weatherForCities.remove(at: indexPath.row)
-            //selectedCities.remove(at: indexPath.row)
-            //print("\(indexPath.row) \(indexPath.section)")
-            //tableView.deleteRows(at: [indexPath], with: .fade)
-            //tableView.reloadData()
-            
-           
-            
-            
-            Init()
-        }
-        
-        
-        //else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        //}
-    }
-    
-
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    /*
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if let identifier = segue.identifier {
             switch identifier {
-                case "addNewCity":
+                case "detailWeather":
                     
                                     var destinationVC = segue.destination
                     
@@ -224,55 +202,19 @@ class SelectedCitiesTableViewController: UITableViewController {
                                         destinationVC = navcon.visibleViewController ?? destinationVC
                                     }
                     
-                                    if let vc = destinationVC as? CitiesListTableViewController {
-                                        
+                                    if let vc = destinationVC as? DetailWeatherViewController {
+                                        if cityIndex != -1 {
+                                            vc.city.append(selectedCities[cityIndex])                   //determine city that should be shown with detailed forecast
+                                            vc.weatherInCity.append(weatherForCities[cityIndex])
+                                        }
                                     }
-
                 default:
                     print("another identifier")
             }
         }
-    }*/
+    }
 
-    
-    //@IBAction func unwindFromCitiesListAddNewCity(_ segue: UIStoryboardSegue){
-       /*
-        if let identifier = segue.identifier {
-            switch identifier {
-            case "unwindNewCity":
-                
-                var sourceVC = segue.source
-                
-                if let navcon = sourceVC as? UINavigationController {
-                    sourceVC = navcon.visibleViewController ?? sourceVC
-                }
-                
-                if let vc = sourceVC as? CitiesListTableViewController {
-                    
-                    firebase.observeChangesInDatabase(completionHandler: { [weak weakself = self] (cities) in
-                        weakself?.selectedCities.removeAll()
-                        weakself?.selectedCities = cities
-                        weakself?.createSession(with: cities, completionHandler:  {[weak weakself2 = self](feedback) in
-                            if feedback == "done" {
-                                DispatchQueue.main.async {
-                                    weakself2?.tableView.reloadData()
-                                }
-                            }
-                        })
-                    })
-                    
-                }
-                
-            default:
-                print("another identifier")
-            }
-        }*/
-
-    //}
-    
-    
-    
-    
+    // method determines subarray of cities that shoud be send to Firebase
     
     func divideArrayOnParts (of cities:[City]) -> [City]{
         
@@ -295,7 +237,7 @@ class SelectedCitiesTableViewController: UITableViewController {
                 
                 let count = Int(quantityOfCycles)
                 
-                countOfBlocks = count
+                countOfBlocks = count   // determines count of request cycles
                 
                 if count == 1 {
                     startIndex = 0
@@ -323,27 +265,8 @@ class SelectedCitiesTableViewController: UITableViewController {
 
         }
         
-        return subarrayCities
-        
-        /*
-        for i in 0 ..< count {
-            
-            subarrayCities.removeAll()
-            
-            if (i * 20 + 19) >= cities.count {
-                startIndex = 20 * i
-                endIndex = cities.count - 1
-            } else {
-                startIndex = 20 * i
-                endIndex = i * 20 + 19
-                if count > 1 {
-                    isLessThan20Cities = false
-                }
-            }
-        }*/
+        return subarrayCities   // return subarray of cities
     }
-    
-    
     
     
     func createSession (with cities:[City], completionHandler: @escaping (String) -> Void) {
@@ -357,41 +280,10 @@ class SelectedCitiesTableViewController: UITableViewController {
         if subarrayCities.count == 0 {
             completionHandler("error")
         } else {
-        /*
-
-        var subarrayCities:[City] = []
-        
-        let floatCount = Float(cities.count)
-        
-        var quantityOfCycles = floatCount / 20.000
-        
-        quantityOfCycles = quantityOfCycles.rounded(.up)
-        
-        let count = Int(quantityOfCycles)
-        
-        countOfBlocks = count
-        
-        for i in 0 ..< count {
-            
-            subarrayCities.removeAll()
-            
-            if (i * 20 + 19) >= cities.count {
-                startIndex = 20 * i
-                endIndex = cities.count - 1
-            } else {
-                startIndex = 20 * i
-                endIndex = i * 20 + 19
-                if count > 1 {
-                    isLessThan20Cities = false
-                    itWasTheLastPartOfCities = false
-                }
-            }
-            
-            subarrayCities.append(contentsOf: cities[startIndex...endIndex])*/
             
             for i in 0...subarrayCities.count - 1 {
                 if i == subarrayCities.count - 1 {
-                    tempStr = tempStr + "\(subarrayCities[i].id!)"
+                    tempStr = tempStr + "\(subarrayCities[i].id!)"      // making a list of cities IDs
                 } else {
                     tempStr = tempStr + "\(subarrayCities[i].id!)" + ","
                 }
@@ -399,7 +291,6 @@ class SelectedCitiesTableViewController: UITableViewController {
             
             weatherURL = URL(string: "http://api.openweathermap.org/data/2.5/group?id=\(tempStr)&units=metric&APPID=\(weatherApiKey)")
             
-            //mySerialQueue.sync {
                 dataTask = session.dataTask(with: weatherURL!, completionHandler: { [weak weakself = self] (data, response, error) in
                     
                     if let error = error {
@@ -412,30 +303,28 @@ class SelectedCitiesTableViewController: UITableViewController {
                             
                             temp = (weakself?.parseWeather(data))!
                             
-                            if weakself?.isLessThan20Cities == true {
+                            if weakself?.isLessThan20Cities == true {   //if less than 20 cities - return the whole forecast
                                 weakself?.weatherForCities = temp
                             } else {
                                 weakself?.weatherForCities.append(contentsOf: temp)
                                 
-                                weakself?.countOfBlocks = (weakself?.countOfBlocks)! - 1
-                                if weakself?.countOfBlocks == 0 {
+                                weakself?.countOfBlocks = (weakself?.countOfBlocks)! - 1    // decreasing counts of request cycles
+                                if weakself?.countOfBlocks == 0 {                           // if countOfBlocks = 0 than it was a lst part of cities and it is possible to show all forecasts
+                                    
                                     weakself?.itWasTheLastPartOfCities = true
                                 }
                             }
                             
                             completionHandler("done")
-                            
-                            
-                            
                         }
                     }
                 })
                 dataTask?.resume()
-            //}
-            
         }
     }
 
+    
+    // parsing weather forecast with the help of SwiftyJson
     
     func parseWeather(_ data: Data?) -> [weatherForecast] {
         
@@ -467,15 +356,6 @@ class SelectedCitiesTableViewController: UITableViewController {
             tempWeatherForecast.main = tempMain
             tempWeatherForecast.weather = tempWeather
             
-            //print("\(clearJson["list"][i])")
-            //print("\(clearJson["list"][i]["weather"].arrayValue.map({ $0["description"].stringValue}))")
-            //print("\(clearJson["list"][i]["main"]["temp"].floatValue)")
-            
-            //print("\(tempWeatherForecasr.cityId!)")
-            //print("\(tempWeatherForecasr.cityName!)")
-            //print("\(tempWeatherForecasr.clouds!)")
-            //print("\(tempWeatherForecasr.windSpeed!)")
-            
             arrayOfWeathers.append(tempWeatherForecast)
         }
         
@@ -484,6 +364,7 @@ class SelectedCitiesTableViewController: UITableViewController {
 
 }
 
+// extension for downloading the weather icon
 
 extension UIImageView {
     func downloadImage(from url:String) {

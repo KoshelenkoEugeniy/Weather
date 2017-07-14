@@ -14,8 +14,9 @@ import FBSDKLoginKit
 
 class Firebase {
     var rootRef: DatabaseReference!
-    var userCities:[City] = []
-    var email: String = ""
+    var userCities:[City] = []  // temporary array of cities from database
+    
+    // Connection to Firebase
     
     func connectionToFirebase(completionHandler: @escaping (String) -> Void) {
         
@@ -31,20 +32,20 @@ class Firebase {
                 return completionHandler("")
             }
             
-            print ("success", user!.email!)
-            weakself?.email = user!.email!
-            
-            UserDefaults.standard.set(user?.uid, forKey: "uid")
+            UserDefaults.standard.set(user?.uid, forKey: "uid") // safe UID of registred user to memory
             UserDefaults.standard.synchronize()
 
             return completionHandler(user!.email!)
         }
     }
     
+    
+    // disconnection to Firebase
+    
     func disconnectionToFirebase() -> Bool {
-        FBSDKLoginManager().logOut()    //facebook
+        FBSDKLoginManager().logOut()    //disconnection to facebook
         do{
-            try Auth.auth().signOut()   // firebase
+            try Auth.auth().signOut()   //disconnection to firebase
             return true
         } catch {
             print(error.localizedDescription)
@@ -52,16 +53,19 @@ class Firebase {
         }
     }
     
+    // add new selected city by user to Firevase
     
     func addNewCity(with info: City){
-        let user = UserDefaults.standard.string(forKey: "uid")
+        
+        let user = UserDefaults.standard.string(forKey: "uid") // getting UID
         
         rootRef = Database.database().reference()
-        let userRef = rootRef.child(user!)
+        let userRef = rootRef.child(user!)          // UID - NameOfCity - AllCityInfo
         let childRef = userRef.child(info.name!)
         childRef.setValue(info.toAnyObject())
     }
     
+    //cheking if some changes were done in Firebase
     
     func observeChangesInDatabase(completionHandler: @escaping ([City]) -> Void){
         
@@ -70,13 +74,18 @@ class Firebase {
         let userRef = rootRef.child(user!)
         
         userRef.observe(.value, with: {[weak weakself = self] (snapshot) in
+            
             if snapshot.childrenCount > 0 {
-                weakself?.userCities.removeAll()
+                
+                weakself?.userCities.removeAll()    //remove all values from temporary array
                 
                 for item in snapshot.children {
                     let currentCity = City(snapshot: item as! DataSnapshot)
-                    weakself?.userCities.append(currentCity)
+                    weakself?.userCities.append(currentCity)    // update temporary array with new values
                 }
+            }
+            else {
+                weakself?.userCities.removeAll()    // else return empty array
             }
             return completionHandler((weakself?.userCities)!)
         })

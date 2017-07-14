@@ -10,17 +10,15 @@ import UIKit
 
 class CitiesListTableViewController: UITableViewController{
     
-    var Cities: [City] = []
-    var cityNames: [String] = []
-    var selectedCity = -1
+    var Cities: [City] = []     //temporary array af all cities
+    var selectedCity = -1       //for determination selected row in table
     
-    let loadingView = UIView()
+    let loadingView = UIView()  //view for spiner
     let spinner = UIActivityIndicatorView()
     let loadingLabel = UILabel()
-    var isUserWaiting:Bool = false
+    var isUserWaiting:Bool = false  //for determination if user is still waiting on results
     
     var firebase = Firebase()
-    
     
     
     override func viewDidLoad() {
@@ -37,15 +35,12 @@ class CitiesListTableViewController: UITableViewController{
         isUserWaiting = false
     }
     
-   
 
-    
     func loadData(){
         parseUkrainianCities { [weak weakself = self] (sortedCities, sortedCityNames) in
             weakself?.Cities = sortedCities
-            weakself?.cityNames = sortedCityNames
             
-            if weakself?.isUserWaiting == true {
+            if weakself?.isUserWaiting == true {    // if user is still waiting show all list of cities
                 if (weakself?.Cities.count)! > 0 {
                     DispatchQueue.main.async {
                         weakself?.tableView.reloadData()
@@ -62,10 +57,12 @@ class CitiesListTableViewController: UITableViewController{
     }
     
     @IBAction func addNewCity(_ sender: UIBarButtonItem) {
-        let currentCity = Cities[selectedCity]
-        firebase.addNewCity(with: currentCity)
+        let currentCity = Cities[selectedCity]  //determine which city was selected
+        firebase.addNewCity(with: currentCity)  //add city to Firebase
         dismiss(animated: true, completion: nil)
     }
+    
+    
     
     
     // MARK: - Table view data source
@@ -76,7 +73,7 @@ class CitiesListTableViewController: UITableViewController{
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return cityNames.count
+        return Cities.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -90,6 +87,13 @@ class CitiesListTableViewController: UITableViewController{
         }
         
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedCity = indexPath.row
+        if navigationItem.rightBarButtonItem?.isEnabled == false {  //only after selection of some city Add button would be enable
+            navigationItem.rightBarButtonItem?.isEnabled = true
+        }
     }
     // -------------------
     
@@ -124,22 +128,9 @@ class CitiesListTableViewController: UITableViewController{
         loadingLabel.isHidden = true
     }
 
-
-   /*
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier! == "unwindNewCity" {
-            let currentCity = Cities[selectedCity]
-            firebase.addNewCity(with: currentCity)
-        }
-    }
-    */
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedCity = indexPath.row
-        if navigationItem.rightBarButtonItem?.isEnabled == false {
-            navigationItem.rightBarButtonItem?.isEnabled = true
-        }
-    }
+    
+    // parsing only Ukrainian cities from .json file that were downloaded from OpenWeatherMap 
     
     func parseUkrainianCities(completionHandler: @escaping ([City],[String]) -> Void) {
         

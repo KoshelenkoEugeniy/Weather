@@ -9,14 +9,14 @@
 import Foundation
 import UIKit
 
+// Struct describes weather forecast according to OpenWeatherMap
+
 struct Weather {
     var description: String?
-    var icon: UIImageView?
     var iconName: String?
     
     init(){
         self.description = nil
-        self.icon = nil
         self.iconName = nil
     }
     

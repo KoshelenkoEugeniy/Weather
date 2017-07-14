@@ -9,13 +9,15 @@
 import Foundation
 import Firebase
 
+// struct describes each city according to OpenWeatherMap
+
 struct City {
     
     var id: Int?
     var name: String?
     var country: String?
     var coord: Coordinates?
-    var ref: DatabaseReference?
+    var ref: DatabaseReference?     // reference on object in Firebase's database
     
     init(){
         self.id = nil
@@ -32,8 +34,7 @@ struct City {
         self.coord = coord
     }
     
-    init(snapshot: DataSnapshot) {
-        //name = snapshot.key
+    init(snapshot: DataSnapshot) {                                  //initialization according to Firebase
         let snapshotValue = snapshot.value as? [String: AnyObject]
         name = snapshotValue?["name"] as? String
         id = snapshotValue?["id"] as? Int
@@ -47,9 +48,7 @@ struct City {
         coord = coordinates
     }
     
-    
-    
-    func toAnyObject() -> Any {
+    func toAnyObject() -> Any {     //method for writing data to Firebase
         return [
             "id": id,
             "name": name,
@@ -62,6 +61,8 @@ struct City {
     }
 }
 
+
+// Struct describes coordinates of each city
 
 struct Coordinates {
     var lon: Float?

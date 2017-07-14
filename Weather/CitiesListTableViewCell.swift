@@ -8,6 +8,8 @@
 
 import UIKit
 
+// Table view cell for list of cities
+
 class CitiesListTableViewCell: UITableViewCell {
 
     @IBOutlet weak var nameOfCity: UILabel!
